@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        // window.WebSocket = null;
+        const URL = 'localhost:8080';
+
+        let controller = updateData(URL, console.log)
+
+        setTimeout(controller, 10000)
+
+        function updateData(url, callback) {
+            let ws;
+            let interval;
+            try {
+                ws = new WebSocket("ws://" + url);
+                ws.onopen = function (msgE) {
+                    console.log('客户端已连接')
+                }
+                ws.onmessage = function (msgE) {
+                    data = JSON.parse(msgE.data);
+                    console.log('客户端收到消息: ' + data.data)
+                    callback(data)
+                }
+            } catch {
+                interval = setInterval(() => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.onload = (data) => {
+                        callback(data);
+                    }
+                    xhr.open("GET", "http://" + url);
+                    xhr.send()
+                }, 3000)
+            }
+
+            // 取消请求
+            return function () {
+                if (ws !== undefined) {
+                    ws.close()
+                } else {
+                    clearInterval(interval)
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
